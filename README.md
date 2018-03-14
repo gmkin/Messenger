@@ -11,6 +11,7 @@
 		- PORT	port that you would like to connect to
 		
 ## Server
+	Can use 'make run' to run server with default settings
 	Run the server as 'python server/server.py [-v] PORT nWORKERS MOTD'
 		- -v	verbose flag tells the server to print all incoming/outgoing protocols
 		- PORT	port to connect to
