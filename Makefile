@@ -1,6 +1,5 @@
 CC := gcc
 SRC_C := client
-SRC_S := server
 SRC_CHAT := chat
 BUILD := build
 BIN := bin
@@ -17,7 +16,6 @@ debug: all
 
 all: setup $(SRC_C) $(SRC_CHAT)
 
-
 _CLIENTF := $(shell find $(SRC_C) -type f -name *.c)
 _OBJ_CLIENT := $(patsubst $(SRC_C)/%,$(BUILD)/%,$(_CLIENTF:.c=.o))
 
@@ -26,10 +24,7 @@ $(SRC_C): $(_OBJ_CLIENT)
 
 $(BUILD)/%.o: $(SRC_C)/%.c
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
-
-$(SRC_S): 
-	python $(SRC_S)/server.py 5000 10 "Thanks for checking out my Messenger Application"
-
+	
 _CHATF := $(shell find $(SRC_CHAT) -type f -name *.c)
 _OBJ_CHAT := $(patsubst $(SRC_CHAT)/%,$(BUILD)/%,$(_CHATF:.c=.o))
 
@@ -38,6 +33,9 @@ $(SRC_CHAT): $(_OBJ_CHAT)
 
 $(BUILD)/%.o: $(SRC_CHAT)/%.c
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+run: 
+	python $(SRC_S)/server.py 5000 10 "Thanks for checking out my Messenger Application"
 
 clean:
 	$(RM) -r $(BUILD) $(BIN)
