@@ -17,9 +17,6 @@ void child_handler(int signum){
 //		DEBUG("Reaped child");
 		invalidateClient(pid);
 	}
-
-//	if(pid == -1)
-//		perror("ERROR");
 }
 
 void terminate_handler(int signum){
@@ -51,39 +48,39 @@ void validateArgs(int argc, char** argv, int* vFlag) {
 }
 
 void prepareConnection(int argc, char** argv, int* sock){
-		struct addrinfo hints;
-		struct addrinfo *result, *rp;
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
 
-		if (argc < 3) {
-			fprintf(stderr, "Usage: %s host port msg...\n", argv[0]);
-			exit(EXIT_FAILURE);
-		}
+	if (argc < 3) {
+		fprintf(stderr, "Usage: %s host port msg...\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
 
-		memset(&hints, 0, sizeof(struct addrinfo));
-		hints.ai_family = AF_UNSPEC;    
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_flags = AI_PASSIVE;
-		hints.ai_protocol = 0;
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;    
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_protocol = 0;
 
-		int s = getaddrinfo(argv[argc - 2], argv[argc - 1], &hints, &result);
-		if (s != 0) {
-			fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
-			exit(EXIT_FAILURE);
-		}
+	int s = getaddrinfo(argv[argc - 2], argv[argc - 1], &hints, &result);
+	if (s != 0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+		exit(EXIT_FAILURE);
+	}
 
-		for (rp = result; rp != NULL; rp = rp -> ai_next) {
-			*sock = socket(rp -> ai_family, rp -> ai_socktype, rp -> ai_protocol);
-			if (*sock == -1)
-				continue;
+	for (rp = result; rp != NULL; rp = rp -> ai_next) {
+		*sock = socket(rp -> ai_family, rp -> ai_socktype, rp -> ai_protocol);
+		if (*sock == -1)
+			continue;
 
-			if (connect(*sock, rp -> ai_addr, rp -> ai_addrlen) != -1)
-				break;
+		if (connect(*sock, rp -> ai_addr, rp -> ai_addrlen) != -1)
+			break;
 
-			close(*sock);
-		}
+		close(*sock);
+	}
 
-		if (rp == NULL)
-			error("Could not connect");
+	if (rp == NULL)
+		error("Could not connect");
 }
 
 void setUpClient(int argc, char** argv, int* vFlag) {
@@ -128,7 +125,6 @@ int main(int argc, char **argv) {
 	me2u(sockfd, vFlag);
 	char* buffRead = login(sockfd, vFlag, username, &buffReadSize);
 
-	// I hope we dont confuse these..
 	fd_set read;			// ready - set fd; read - one for select to touch
 	int maxfd = max(sockfd, fileno(stdin)) + 1;	// which is probably always sockfd
 	FD_ZERO (&ready);
@@ -140,11 +136,9 @@ int main(int argc, char **argv) {
 		memset(buf, 0, BUFSIZE);
 		read = ready;
 		DEBUG("Waiting on I/O\n");
-		if (select (maxfd, &read, NULL, NULL, NULL) < 0){
-			//perror ("Error while processing select");
+		if (select (maxfd, &read, NULL, NULL, NULL) < 0)
             if(errno ==EINTR)
                 continue;
-        }
 
 		if (FD_ISSET (fileno(stdin), &read)) {
 			vRead(fileno(stdin), buf, BUFSIZE, 0, "Fail to read from stdin");
@@ -158,7 +152,7 @@ int main(int argc, char **argv) {
 				}
 
 				int new_fd = message(sockfd, username, vFlag, buf);
-				if(new_fd){
+				if(new_fd) {
 					FD_SET(new_fd, &ready);
 					maxfd = max(new_fd, maxfd) + 1;
 				}
@@ -184,13 +178,10 @@ int main(int argc, char **argv) {
 					maxfd = max(new_fd, maxfd)+1;
 				}
 			}
-            else if (!strncmp(buffRead, "EDNE ", 5)){
+            else if (!strncmp(buffRead, "EDNE ", 5))
                 message(sockfd,username, vFlag, buffRead);
-            }
 			else if (!strncmp(buffRead, "UOFF ", 5)) {
 				DEBUG("%s%s has logged off%s\n", KCYN, buffRead + 5, KNRM);
-
-				// TODO: RYAN - INSERT CLOSE XTERM for user
                 uoff(buffRead);
 			}
 			else {
@@ -201,7 +192,7 @@ int main(int argc, char **argv) {
 
 		//XTerm parsing
 		int count = 0;
-		while(count < array_size){
+		while(count < array_size) {
 			struct client cl = all_clients[count++];
 			DEBUG("COUNT %d CHECKING %s WITH SOCKET NUMBER %d\n", count, cl.name, cl.socket);
             if(cl.socket == 0)
