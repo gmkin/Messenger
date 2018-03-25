@@ -2,7 +2,6 @@
 
 // General purpose helper functions 
 void usage(int exit_status) {
-	// It may appear ugly here, but not on the CLI...
 	printf("%s\n%s\n%s\n%s\n%s\n%s\n", 
 		"./client [-hv] username SERVER_IP SERVER_PORT",
 		"-h		Displays this help menu, and returns EXIT_SUCCESS.",
@@ -48,7 +47,6 @@ int vRead(int sockfd, char* buff, int max_buff, int vFlag, char* error_msg) {
 	int bytes_read = read(sockfd, buff, max_buff);
 	if (bytes_read < 0 && errno != EINTR)
 		error(error_msg);
-
 	return bytes_read;
 }
 
@@ -58,13 +56,13 @@ char* bufRead(int fd, char* buff, int* buff_size, int vFlag, char* error_msg) {
 		*buff_size = BUFSIZE;
 		buff = malloc(BUFSIZE);
         memset(buff,0,*buff_size);
-	} 
-    else {
+	} else {
 		int i = strlen(buff);
         char* temp = buff+i+1;
 		memcpy(buff, temp, *buff_size-i);
 		memset(buff + *buff_size - i, 0, i);
 	}
+	
 	char* end;
     int count = 0;
 	while ((end = strstr(buff, "\r\n\r\n")) == NULL) {
@@ -81,8 +79,6 @@ char* bufRead(int fd, char* buff, int* buff_size, int vFlag, char* error_msg) {
 			error("vRead < 0 and not EINT; what error could this be?");
 	}
 
-	//buff = realloc(buff, strlen(buff) + 2);		// save some memory
-	//*buff_size = strlen(buff);
 	end += 4;									// include CRLFCRLF
     int len = strlen(buff);
 	memmove(end + 1, end, len);
@@ -142,7 +138,6 @@ char* login(int sockfd, int vFlag, char* username, int* bufReadSize) {
 	
 	printf("%sMessage of the Day: %s%s\n", KGRN, readBuff + 5, KNRM);
 	DEBUG("%s\n", "Successfully Logged In");
-
 	return readBuff;
 }
 
@@ -157,8 +152,6 @@ void listU(int sockfd, int vFlag, char* buff, int* max_buff) {
 }
 
 void from(int sockfd, int vFlag, char* buf) {
-	// printf("%s[%s]%s\n", usrClr, buf + 5, DEFAULT);		// prints after 'FROM '
-
 	char sendBuff[6 + MAXNAME];			// 'FROM' + space + MAXNAME + NULL
 	memset(sendBuff, 0, sizeof(sendBuff));
 	memcpy(sendBuff, "MORF ", 5);
@@ -233,14 +226,12 @@ int message(int sockfd, char* username,int vFlag, char* buff) {
 		vWrite(available_client.socket, buff, vFlag);
 		from(sockfd, vFlag, buff);
         OT = 1;
-	} 
-	else if(!strncmp(buff, "TO ", 3)){
+	} else if(!strncmp(buff, "TO ", 3)){
 		vWrite(sockfd, buff, vFlag);
 		memset(buff, 0, BUFSIZE);
         available_client.available = found ? 4 : 3;
         all_clients[count] = available_client;
-	}
-    else if(!strncmp(buff, "OT ", 3)){
+	} else if(!strncmp(buff, "OT ", 3)){
         //Did not ask for OT
         if(available_client.available != 3 && available_client.available != 4){
             raise(SIGTERM);
@@ -255,7 +246,6 @@ int message(int sockfd, char* username,int vFlag, char* buff) {
         }
         available_client.available = 1;
         all_clients[count] = available_client;
-        //FD_SET(available_client.socket,&ready);
         OT = 1;
     }
     else if(!strncmp(buff, "EDNE ", 5)){
@@ -281,11 +271,6 @@ int message(int sockfd, char* username,int vFlag, char* buff) {
         available_client.available = found ? 4: 3;
         all_clients[count] = available_client;
         OT = 1;
-		//memset(buff, 0, BUFSIZE);
-		//vRead(sockfd, buff, BUFSIZE, vFlag, "Expecting OT ..");
-		//if(strncmp(buff,"OT ", 3))
-		//	error("Expected OT <name>");
-
 	}
 
 	if(!found)
@@ -304,15 +289,12 @@ void logout(int sockfd, int vFlag) {
     int size = BUFSIZE;
 	do{
         buff = bufRead(sockfd, NULL, &size, vFlag, "Expecting EYB from server");
-        //vRead(sockfd, buff, BUFSIZE, vFlag, "Expecting EYB from server");
-    }
-	while(!equals(buff, "EYB\r\n\r\n"));
+    } while(!equals(buff, "EYB\r\n\r\n"));
 
 }
 
 void cleanup(fd_set fd_list) {
 	// TBD, close all sockets (except to main)
-
 }
 
 void removeClient(int pid){
@@ -323,10 +305,8 @@ void removeClient(int pid){
 			struct client temp = all_clients[--array_size];
 			DEBUG("Removing client: %s (fd: %d) Array size:%d\n", cl.name, cl.socket, array_size);
 			all_clients[count - 1] = temp;
-			//memcpy(all_clients[count], temp, sizeof(struct client));
 			break;
 		}
-		//count--;
 	}
 }
 
@@ -350,7 +330,6 @@ void uoff(char* buff){
         struct client* temp = &(all_clients[count++]);
         if(!strcmp(temp->name,startOfName)){
             invalidateClient(temp->pid);
-            //kill(temp->pid,SIGTERM);
             break;
         }
     }    
